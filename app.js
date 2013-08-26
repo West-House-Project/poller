@@ -16,8 +16,84 @@ var request    = require('request'),
 
 connection.connect();
 
-// TODO: refactor the code, below.
-// TODO: use squel.js for writing queries.
+// TODO: refactor the code, below
+// TODO: use squel.js for writing queries
+
+/**
+ * @param number is a number.
+ * @param callback is a function that accepts parameters, err and device, where
+ *   err is an error, and device is an object that represents the newly created
+ *   device.
+ */
+// TODO: test this function.
+var insertNewDevice = function (number, callback) {
+  var deviceNumber = connection.escape(number.toString());
+
+  async.waterfall([
+    function (callback) {
+      connection.query(
+        'Insert INTO devices (device_number) VALUES (' +
+          deviceNumber +
+        ');',
+        function (err) {
+          if (err) return callback(err);
+          return callback(null);
+        }
+      );
+    },
+
+    function (callback) {
+      connection.query(
+        'SELECT id, device_number FROM devices ' +
+          'WHERE device_number=' + deviceNumber + ';',
+
+        function (err, results) {
+          if (err) return callback(err);
+
+          if (!results.length) {
+            return callback(new Error('The new device has not'));
+          }
+
+          callback(null, results[0]);
+        }
+      );
+    }
+  ],
+  function (err, device) {
+    if (err) return callback(err);
+    callback(null, device);
+  });
+};
+
+/**
+ * @param number is a number.
+ */
+// TODO: test this function.
+var getDeviceFromNumber = function (number, callback) {
+  var deviceNumber = connection.escape(number.toString());
+
+  connection.query(
+    'SELECT id, device_number FROM devices ' +
+      'WHERE device_number=' + deviceNumber + ';',
+
+    function (err, results) {
+      if (err) return callback(err);
+
+      if (!results.length) {
+        return insertNewDevice(number, function (err, device) {
+          if (err) return callback(err);
+          callback(null, device);
+        });
+      }
+
+      callback(null, results[0]);
+    }
+  );
+};
+
+var insertNewConsumptionData = function (id, kW, kWh, callback) {
+
+};
 
 setInterval(function () {
   request('http://' + settings.host + '/consumptions', function (err, res, body) {
@@ -30,92 +106,16 @@ setInterval(function () {
       consumptions = JSON.parse(body);
 
       consumptions.forEach(function (device) {
-        var deviceNumber = connection.escape(device.deviceNumber);
-
         async.waterfall([
 
           // Get the device's database ID, given its device number. If the
           // device isn't even in the database, then insert it.
           function (callback) {
 
-            // Looks for the device.
-            connection.query(
-              'SELECT id, device_number FROM devices ' +
-                'WHERE device_number=' + deviceNumber + ';',
-
-              function (err, results) {
-                if (err) return callback(err);
-
-                if (!results.length) {
-
-                  // This code is reached, because there were no devices'
-                  // metadata in the database that matched the device's
-                  // number.
-
-                  // TODO: so far, the code queries for a device via the 
-                  //   device number (which is different from the primary
-                  //   key). And then, if it isn't able to find any devices,
-                  //   it will insert the new device. Now, it is required to
-                  //   query for the device, anew. It will be ideal if this
-                  //   wasn't the case.
-                  return async.waterfall([
-
-                    // New device insertion.
-                    function (callback) {
-                      connection.query(
-                        'INSERT INTO devices (device_number) VALUES (' +
-                          deviceNumber +
-                        ');',
-                        function (err) {
-                          if (err) return callback(err);
-                          return callback(null);
-                        }
-                      );
-                    },
-
-                    // Get the newly inserted device.
-                    function (callback) {
-                      connection.query(
-
-                        'SELECT id, device_number FROM devices ' +
-                          'WHERE device_number=' + deviceNumber + ';',
-
-                        function (err, results) {
-                          if (err) return callback(err);
-
-                          if (!results.length) {
-
-                            // In theory, there should be a device with the
-                            // stored device number.
-                            return callback(new Error(
-                              'The new device has not been entered.'
-                            ));
-
-                          }
-
-                          return callback(results[0]);
-                        }
-                      );
-                    }
-
-                  ],
-
-                  function (err, result) {
-                    if (err) return callback(err);
-
-                    callback(null, result);
-                  });
-                }
-
-                // If there weren't any devices given the device ID, then the
-                // code below is unreacheable.
-
-                process.nextTick(function () {
-                  callback(null, results[0]);
-                });
-
-              }
-            );
+            getDeviceFromNumber(device.deviceNumber, function (err, device) {
+              if (err) return callback(err);
+              callback(null, device);
+            });
 
           },
 
