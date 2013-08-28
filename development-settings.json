@@ -1,0 +1,8 @@
+{
+  "host": "west-house.no-ip.org:3000",
+  "database": {
+    "user"    : "root",
+    "password": "root",
+    "database": "westhouse"
+  }
+}
