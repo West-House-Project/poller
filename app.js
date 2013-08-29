@@ -2,17 +2,29 @@
 
 'use strict';
 
-var request    = require('request'),
-    settings   = require('./settings.json'),
+var INTERVAL   = 10 * 1000,
+
+    request    = require('request'),
     mysql      = require('mysql'),
     async      = require('async'),
-    connection = mysql.createConnection({
-      host    : 'localhost',
-      user    : settings.database.user,
-      password: settings.database.password,
-      database: settings.database.database
-    }),
-    INTERVAL   = 10 * 1000; // 10 seconds
+
+    settings,
+    connection;
+
+debugger;
+
+if (process.env.POLLER_ENV === 'production') {
+  settings = require('./production-settings.json');
+} else {
+  settings = require('./development-settings.json');
+}
+
+connection = mysql.createConnection({
+  host    : 'localhost',
+  user    : settings.database.user,
+  password: settings.database.password,
+  database: settings.database.database
+});
 
 connection.connect();
 
@@ -91,8 +103,40 @@ var getDeviceFromNumber = function (number, callback) {
   );
 };
 
-var insertNewConsumptionData = function (id, kW, kWh, callback) {
+/**
+ * @param the device's database ID, for the consumption data to refer to.
+ */
+var insertConsumptionData = function (id, kW, kWh, callback) {
+  connection.query(
+    'INSERT INTO energy_consumption (device_id, kw, kwh) VALUES (' +
+      connection.escape(id) + ', ' +
+      connection.escape(kW) + ', ' +
+      connection.escape(kWh) +
+    ');',
+    function (err) {
+      if (err) return callback(err);
+      callback(null);
+    }
+  );
+};
 
+var insertHourlyTotal = function (id, kW, kWh, callback) {
+  connection.query(
+    'SELECT id, time, start_kwh, hour_kwh, device_id ' +
+    'FROM hourly_totals ' +
+    'WHERE device_id=' + connection.escape(id) + ' ' +
+    'ORDER BY time DESC ' + 
+    'LIMIT 1',
+
+    function (err, results) {
+      if (!results.length) {
+        return connection.query(
+          'INSERT INTO hourly_totals ' +
+          '()'
+        );
+      }
+    }
+  );
 };
 
 setInterval(function () {
@@ -121,12 +165,8 @@ setInterval(function () {
 
           // Insert the energy consumption data.
           function (result, callback) {
-            connection.query(
-              'INSERT INTO energy_consumption (device_id, kw, kwh) VALUES (' +
-                connection.escape(result.id) + ',' +
-                connection.escape(device.kW) + ',' +
-                connection.escape(device.kWh) +
-              ');',
+            insertConsumptionData(
+              result.id, device.kW, device.kWh,
               function (err) {
                 if (err) return callback(err);
                 callback(null);
