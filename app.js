@@ -2,22 +2,14 @@
 
 'use strict';
 
-var INTERVAL   = 10 * 1000,
+var INTERVAL   = 10 * 1000;
 
-    request    = require('request'),
-    mysql      = require('mysql'),
-    async      = require('async'),
+var request    = require('request');
+var mysql      = require('mysql');
+var async      = require('async');
 
-    settings,
-    connection;
-
-debugger;
-
-if (process.env.POLLER_ENV === 'production') {
-  settings = require('./production-settings.json');
-} else {
-  settings = require('./development-settings.json');
-}
+var settings = require('./lib/settings.js');
+var connection;
 
 connection = mysql.createConnection({
   host    : 'localhost',
