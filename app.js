@@ -9,14 +9,16 @@ var mysql      = require('mysql');
 var async      = require('async');
 
 var settings = require('./lib/settings.js');
-var connection;
 
-connection = mysql.createConnection({
+var connection = mysql.createConnection({
   host    : 'localhost',
   user    : settings.database.user,
   password: settings.database.password,
   database: settings.database.database
 });
+
+var remoteURL =
+  'http://' + settings.host + ':' + settings.port + '/consumptions';
 
 connection.connect();
 
@@ -65,7 +67,7 @@ var insertNewDevice = function (number, callback) {
   ],
   function (err, device) {
     if (err) return callback(err);
-    callback(null, device);
+  callback(null, device);
   });
 };
 
@@ -84,6 +86,9 @@ var getDeviceFromNumber = function (number, callback) {
       if (err) return callback(err);
 
       if (!results.length) {
+
+        console.log('New device found: ' + number);
+
         return insertNewDevice(number, function (err, device) {
           if (err) return callback(err);
           callback(null, device);
@@ -132,14 +137,11 @@ var insertHourlyTotal = function (id, kW, kWh, callback) {
 };
 
 setInterval(function () {
-  request('http://' + settings.host + '/consumptions', function (err, res, body) {
-
-    var consumptions;
-    
+  request(remoteURL, function (err, res, body) {
     if (err) return console.error(err.message);
     
     try {
-      consumptions = JSON.parse(body);
+      var consumptions = JSON.parse(body);
 
       consumptions.forEach(function (device) {
         async.waterfall([
@@ -177,3 +179,4 @@ setInterval(function () {
 }, INTERVAL);
 
 console.log('Polling the West House Middleware');
+console.log('URL: ' + remoteURL);
