@@ -151,18 +151,24 @@ var insertHourlyTotal = function (deviceId, kWh, callback) {
         !results.length ||
         !utils.areHoursSame(result.time, currentTime)
       ) {
-        return connection.query(
+        var query =
           'INSERT INTO hourly_totals ' +
           '(device_id, time, start_kwh, hour_kwh) ' +
           'VALUE ( ' +
             connection.escape(deviceId) + ', ' +
-            connection.escape( currentTime.getTime() ) + ', ' +
+            connection.escape( currentTime ) + ', ' +
             connection.escape(kWh) + ', ' +
             connection.escape(0) + ' ' +
-          ');',
-          queryDone
-        );
+          ');';
+        return connection.query(query, queryDone);
       }
+
+      console.log('device id         : ' + deviceId);
+      console.log('Current kWh       : ' + kWh);
+      console.log('Start kWh         : ' + result.start_kwh);
+      console.log('Is start > current: ' + (result.start_kwh > kWh));
+      console.log('Hourly total      : ' + (kWh - result.start_kwh));
+      console.log();
 
       connection.query(
         'UPDATE hourly_totals ' +
@@ -206,6 +212,17 @@ setInterval(function () {
               function (err) {
                 if (err) return callback(err);
                 callback(null, result);
+              }
+            );
+          },
+
+          // Insert the hourly total.
+          function (result, callback) {
+            insertHourlyTotal(
+              result.id, device.kWh,
+              function (err) {
+                if (err) return callback(err);
+                callback(null);
               }
             );
           }
