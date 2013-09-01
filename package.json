@@ -12,5 +12,8 @@
     "request": "~2.27.0",
     "mysql": "~2.0.0-alpha8",
     "async": "~0.2.9"
+  },
+  "devDependencies": {
+    "expect.js": "~0.2.0"
   }
 }
