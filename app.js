@@ -23,7 +23,6 @@ var remoteURL =
 
 connection.connect();
 
-// TODO: refactor the code, below
 // TODO: use squel.js for writing queries
 
 /**
@@ -104,6 +103,7 @@ var getDeviceFromNumber = function (number, callback) {
 /**
  * @param the device's database ID, for the consumption data to refer to.
  */
+// TODO: test this function.
 var insertConsumptionData = function (id, kW, kWh, callback) {
   connection.query(
     'INSERT INTO energy_consumption (device_id, kw, kwh) VALUES (' +
@@ -130,9 +130,12 @@ var insertConsumptionData = function (id, kW, kWh, callback) {
  * @param callback is a function that is called once data has gone into the
  *   database.
  */
+// TODO: test this function.
 var insertHourlyTotal = function (deviceId, kWh, callback) {
+  // TODO: insert the min and max values.
+
   connection.query(
-    'SELECT device_id, time, start_kwh, hour_kwh ' +
+    'SELECT id, device_id, time, start_kwh, hour_kwh ' +
     'FROM hourly_totals ' +
     'WHERE device_id=' + connection.escape(deviceId) + ' ' +
     'ORDER BY time DESC ' +
@@ -148,7 +151,7 @@ var insertHourlyTotal = function (deviceId, kWh, callback) {
       };
 
       if (
-        !results.length ||
+        !result ||
         !utils.areHoursSame(result.time, currentTime)
       ) {
         var query =
@@ -173,7 +176,7 @@ var insertHourlyTotal = function (deviceId, kWh, callback) {
       connection.query(
         'UPDATE hourly_totals ' +
         'SET hour_kwh=' + connection.escape( kWh - result.start_kwh ) + ' ' +
-        'WHERE device_id=' + connection.escape(deviceId) +
+        'WHERE id=' + connection.escape(result.id) +
         ';',
         queryDone
       );
