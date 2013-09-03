@@ -14,6 +14,4 @@ rm -rf ~/westhouse-bin/$BNAME
 
 mv $BNAME ~/westhouse-bin
 
-POLLER_ENV="production"
-export POLLER_ENV
-/usr/local/bin/forever start ~/westhouse-bin/$BNAME/app.js
+env NODE_ENV="production" /usr/local/bin/forever start ~/westhouse-bin/$BNAME/app.js

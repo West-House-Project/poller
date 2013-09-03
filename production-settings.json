@@ -1,8 +1,0 @@
-{
-  "host": "192.168.2.66:3000",
-  "database": {
-    "user"    : "root",
-    "password": "OjAbvew8OjAbvew8",
-    "database": "westhouse"
-  }
-}
