@@ -132,10 +132,9 @@ var insertConsumptionData = function (id, kW, kWh, callback) {
  */
 // TODO: test this function.
 var insertHourlyTotal = function (deviceId, kWh, callback) {
-  // TODO: insert the min and max values.
 
   connection.query(
-    'SELECT id, device_id, time, start_kwh, hour_kwh ' +
+    'SELECT id, device_id, time, start_kwh, hour_kwh, min, max ' +
     'FROM hourly_totals ' +
     'WHERE device_id=' + connection.escape(deviceId) + ' ' +
     'ORDER BY time DESC ' +
@@ -166,16 +165,31 @@ var insertHourlyTotal = function (deviceId, kWh, callback) {
         return connection.query(query, queryDone);
       }
 
+      var hourKWh = kWh - result.start_kwh;
+      var difference = hourKWh - result.hour_kwh;
+
+      var min = !~result.min || difference < result.min ?
+        difference : result.min;
+      var max = !~result.max || difference > result.max ?
+        difference : result.max;
+
       console.log('device id         : ' + deviceId);
       console.log('Current kWh       : ' + kWh);
       console.log('Start kWh         : ' + result.start_kwh);
       console.log('Is start > current: ' + (result.start_kwh > kWh));
       console.log('Hourly total      : ' + (kWh - result.start_kwh));
+      console.log('Previous min      : ' + result.min);
+      console.log('Previous max      : ' + result.max);
+      console.log('Is new < min      : ' + (!~result.min || difference < result.min));
+      console.log('Is new > max      : ' + (!~result.max || difference > result.max));
       console.log();
 
       connection.query(
         'UPDATE hourly_totals ' +
-        'SET hour_kwh=' + connection.escape( kWh - result.start_kwh ) + ' ' +
+        'SET ' +
+        'hour_kwh=' + connection.escape( kWh - result.start_kwh ) + ', ' +
+        'min=' + connection.escape(min) + ', ' +
+        'max=' + connection.escape(max) + ' ' +
         'WHERE id=' + connection.escape(result.id) +
         ';',
         queryDone
