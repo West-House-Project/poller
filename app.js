@@ -86,9 +86,6 @@ var getDeviceFromNumber = function (number, callback) {
       if (err) return callback(err);
 
       if (!results.length) {
-
-        console.log('New device found: ' + number);
-
         return insertNewDevice(number, function (err, device) {
           if (err) return callback(err);
           callback(null, device);
@@ -172,17 +169,6 @@ var insertHourlyTotal = function (deviceId, kWh, callback) {
         difference : result.min;
       var max = !~result.max || difference > result.max ?
         difference : result.max;
-
-      console.log('device id         : ' + deviceId);
-      console.log('Current kWh       : ' + kWh);
-      console.log('Start kWh         : ' + result.start_kwh);
-      console.log('Is start > current: ' + (result.start_kwh > kWh));
-      console.log('Hourly total      : ' + (kWh - result.start_kwh));
-      console.log('Previous min      : ' + result.min);
-      console.log('Previous max      : ' + result.max);
-      console.log('Is new < min      : ' + (!~result.min || difference < result.min));
-      console.log('Is new > max      : ' + (!~result.max || difference > result.max));
-      console.log();
 
       connection.query(
         'UPDATE hourly_totals ' +
