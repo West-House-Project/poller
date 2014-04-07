@@ -11,12 +11,7 @@ var async = require('async');
 
 var settings = require('./lib/settings.js');
 
-var connection = mysql.createConnection({
-  host    : 'localhost',
-  user    : settings.database.user,
-  password: settings.database.password,
-  database: settings.database.database
-});
+var connection = mysql.createConnection(settings.database);
 
 var remoteURL =
   'http://' + settings.host + ':' + settings.port + '/consumptions';
