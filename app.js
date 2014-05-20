@@ -20,7 +20,6 @@ const looptimeout = 1000;
 // This will infinite loop.
 (function loop() {
   // Get all current values being read from mControl.
-  console.log()
   request({
     url: settings.get('remote:url_prefix') + '/current',
   }, function (err, res, body) {
@@ -75,8 +74,6 @@ const looptimeout = 1000;
       })) || [];
     var energyDraw = json.energy_draw || [];
     var energyProduction = json.energy_production || [];
-
-    console.log(energyConsumption);
 
     // Insert the data parallely (if that's even a word).
     async.parallel([
