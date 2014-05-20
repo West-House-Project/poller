@@ -1,19 +1,11 @@
 {
-  "name": "west-house-poller",
-  "version": "0.0.0",
-  "description": "",
-  "main": "app.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "development": "NODE_ENV=development nodemon app.js"
   },
-  "author": "Simon Fraser University",
-  "license": "BSD",
   "dependencies": {
-    "request": "~2.27.0",
-    "mysql": "~2.0.0-alpha8",
-    "async": "~0.2.9"
-  },
-  "devDependencies": {
-    "expect.js": "~0.2.0"
+    "nconf": "^0.6.9",
+    "request": "^2.34.0",
+    "influx": "^0.4.0",
+    "async": "^0.9.0"
   }
 }
