@@ -6,8 +6,9 @@ var async = require('async');
 var client = influx(
   'localhost',
   8086,
-  settings.get('database:username'),
-  settings.get('database:password')
+  settings.get('influxdb:username'),
+  settings.get('influxdb:password'),
+  settings.get('influxdb:database')
 );
 
 // Unlike the name implies, this isn't used to store the data temporarily in
@@ -80,6 +81,7 @@ const looptimeout = 1000;
       function (callback) {
         // This check avoids an additional roundtrip.
         if (!energyConsumption.length) { return callback(null); }
+        console.log(energyConsumption);
         client.writePoints('energy_consumption', energyConsumption, function (err, result) {
           // TODO: check for any errors.
           callback(null);
