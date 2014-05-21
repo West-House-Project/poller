@@ -48,6 +48,7 @@ const looptimeout = 1000;
       var json = JSON.parse(body);
     } catch (e) {
       console.log(e);
+      console.log('JSON:\n %s', body);
       return setTimeout(function () {
         loop();
       }, looptimeout);
