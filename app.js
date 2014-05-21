@@ -16,7 +16,7 @@ console.log(
   settings.get('influxdb:database'),
   settings.get('influxdb:host'),
   settings.get('influxdb:port'),
-  settings.get('influxdb:database')
+  settings.get('influxdb:username')
 );
 
 // Unlike the name implies, this isn't used to store the data temporarily in
