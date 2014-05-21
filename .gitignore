@@ -1,4 +1,2 @@
 node_modules
-settings.json
-development-settings.json
-development.json
+settings/*.json
