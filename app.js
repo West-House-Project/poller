@@ -11,6 +11,14 @@ var client = influx(
   settings.get('influxdb:database')
 );
 
+console.log(
+  'Polling database %s, on host %s, on port %s, with username %s',
+  settings.get('influxdb:database'),
+  settings.get('influxdb:host'),
+  settings.get('influxdb:port'),
+  settings.get('influxdb:database')
+);
+
 // Unlike the name implies, this isn't used to store the data temporarily in
 // order for faster retrieval the next time. Instead, this is for holding the
 // previous kWh value.
