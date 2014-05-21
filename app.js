@@ -4,8 +4,8 @@ var influx = require('influx');
 var async = require('async');
 
 var client = influx(
-  'localhost',
-  8086,
+  settings.get('influxdb:host'),
+  settings.get('influxdb:port'),
   settings.get('influxdb:username'),
   settings.get('influxdb:password'),
   settings.get('influxdb:database')
@@ -22,6 +22,7 @@ const looptimeout = 1000;
 (function loop() {
   // Get all current values being read from mControl.
   request({
+    // TODO: rename `remote:url_prefix` to `middleware:url_prefix`.
     url: settings.get('remote:url_prefix') + '/current',
   }, function (err, res, body) {
     if (err) {
@@ -32,7 +33,7 @@ const looptimeout = 1000;
     }
     // TODO: check for any errors.
 
-    // TODO: insert the energy consumer data into the database.
+    // TODO: insert the energy consumer data into MySQL.
 
     // We should get JSON body that looks like:
     //   {
@@ -81,7 +82,6 @@ const looptimeout = 1000;
       function (callback) {
         // This check avoids an additional roundtrip.
         if (!energyConsumption.length) { return callback(null); }
-        console.log(energyConsumption);
         client.writePoints('energy_consumption', energyConsumption, function (err, result) {
           // TODO: check for any errors.
           callback(null);
