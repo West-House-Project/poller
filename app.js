@@ -44,7 +44,14 @@ const looptimeout = 1000;
     //
     // Possibly with some of the above aforementioned properties being omitted.
     // In those case, just interpret the missing property as an empty array.
-    var json = JSON.parse(body);
+    try {
+      var json = JSON.parse(body);
+    } catch (e) {
+      console.log(e);
+      return setTimeout(function () {
+        loop();
+      }, looptimeout);
+    }
 
     // The current time.
     var time = new Date();
