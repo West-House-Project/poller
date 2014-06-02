@@ -59,12 +59,15 @@ const looptimeout = 1000;
         }
 
         if (err) {
-          // TODO: remove all instances of error messages sent to the screen.
-          console.log(err.toString());
-          callback(err);
+          return callback(err);
         }
         var currentTime = new Date().toISOString();
 
+        // This performs the difference between the last time the energy
+        // consumption data was read, and this time. If there was no "last
+        // time," then simply don't send the data to the DBMS.
+        // TODO: when there was a reset in the energy consumption readings,
+        //   then simply filter those out, until the next time.
         json.filter(function (element) {
           if (element.series !== 'energy_consumption') {
             return true;
@@ -73,9 +76,11 @@ const looptimeout = 1000;
             cache[element.device_id] = element.value;
             return false;
           }
-          element.value = element.value - cache[element.devices_id];
+          element.value = element.value - cache[element.device_id];
           return true;
         });
+
+        console.log(json);
 
         json.forEach(function (object) {
           object.time = currentTime;
