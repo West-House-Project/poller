@@ -1,13 +1,12 @@
 {
   "scripts": {
-    "development": "NODE_ENV=development nodemon app.js"
+    "develop": "NODE_ENV=development nodemon app.js"
   },
   "dependencies": {
     "nconf": "^0.6.9",
     "request": "^2.34.0",
     "influx": "^0.4.0",
     "async": "^0.9.0",
-    "mysql": "^2.3.0",
     "lodash": "^2.4.1"
   }
 }
