@@ -12,6 +12,31 @@ var cache = {};
 
 const looptimeout = 1000;
 
+var session = null;
+
+function getSession() {
+  request({
+    url: settings.get('dbms:url_prefix') + '/login',
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(_.pick(settings.get('dbms'), 'username', 'password'))
+  }, function (err, res, body) {
+    if (err) {
+      return console.error(err);
+    }
+    if (res && res.statusCode >= 400) {
+      return console.error(
+        'Got POST response with status code %s:\n%%s',
+        res.statusCode,
+        body
+      );
+    }
+    session = JSON.parse(body).token;
+  });
+}
+
 // This will infinite loop.
 (function loop() {
 
@@ -30,11 +55,7 @@ const looptimeout = 1000;
       }, function (err, res, body) {
         if (err) { return callback(err); }
         if (!res || res.statusCode >= 400) { return callback(new Error(body)); }
-        // TODO: remove the repeated code:
-        //
-        //     setTimeout(function () {
-        //       loop();
-        //     }, looptimeout)
+
 
         // We should get a JSON body that looks like:
         //
@@ -50,12 +71,11 @@ const looptimeout = 1000;
         // Possibly with some of the above aforementioned properties being
         // omitted. In those case, just interpret the missing property as an
         // empty array.
+        // TODO: ensure that the JSON data is valid.
         try {
           var json = JSON.parse(body);
         } catch (e) {
-          console.log(e);
-          console.log('JSON:\n %s', body);
-          return callback(err);
+          return callback(e);
         }
 
         if (err) {
@@ -80,8 +100,6 @@ const looptimeout = 1000;
           return true;
         });
 
-        console.log(json);
-
         json.forEach(function (object) {
           object.time = currentTime;
         });
@@ -98,10 +116,16 @@ const looptimeout = 1000;
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify(json)
+        body: JSON.stringify({
+          data: json,
+          session: session
+        })
       }, function (err, res, body) {
         if (err) { return callback(err); }
         if (res && res.statusCode >= 400) {
+          if (res.statusCode === 403) {
+            getSession();
+          }
           return callback(
             util.format(
               'Got POST response with status code %s:\n%s',
@@ -114,7 +138,7 @@ const looptimeout = 1000;
       })
     },
   ], function (err) {
-    if (err) { console.log(err); }
+    if (err) { console.error(err); }
     setTimeout(function () {
       loop();
     }, looptimeout);
