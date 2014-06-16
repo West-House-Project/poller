@@ -10,7 +10,7 @@ var util = require('util');
 // previous kWh value.
 var cache = {};
 
-const looptimeout = 1000;
+const looptimeout = settings.get('looptimeout') || 1000;
 
 var session = null;
 
