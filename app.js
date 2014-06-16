@@ -96,7 +96,9 @@ function getSession() {
             cache[element.device_id] = element.value;
             return false;
           }
+          var old = element.value;
           element.value = element.value - cache[element.device_id];
+          cache[element.device_id] = old;
           return true;
         });
 
