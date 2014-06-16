@@ -11,4 +11,6 @@ nconf.file({
   file: path.join(__dirname, nconf.get('environment') + '.json')
 });
 
-module.exports = nconf;
+module.exports.get = function (key) {
+  return nconf.get(key);
+}
