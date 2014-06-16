@@ -1,5 +1,6 @@
 {
   "scripts": {
+    "start": "node app",
     "develop": "NODE_ENV=development nodemon app.js"
   },
   "dependencies": {
