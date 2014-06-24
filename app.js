@@ -28,7 +28,7 @@ function getSession() {
     }
     if (res && res.statusCode >= 400) {
       return console.error(
-        'Got POST response with status code %s:\n%%s',
+        'Got POST response with status code %s:\n%s',
         res.statusCode,
         body
       );
