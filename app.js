@@ -28,7 +28,8 @@ function getSession() {
     }
     if (res && res.statusCode >= 400) {
       return console.error(
-        '%s: Got POST response with status code %s:\n%s',
+        '%s: %s: Got POST response with status code %s:\n%s',
+        new Date(),
         settings.get('dbms:url_prefix'),
         res.statusCode,
         body
