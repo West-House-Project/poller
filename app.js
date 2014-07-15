@@ -88,13 +88,14 @@ function getSession() {
         // This performs the difference between the last time the energy
         // consumption data was read, and this time. If there was no "last
         // time," then simply don't send the data to the DBMS.
-        // TODO: when there was a reset in the energy consumption readings,
-        //   then simply filter those out, until the next time.
         json.filter(function (element) {
-          if (element.series !== 'energy_consumption') {
+          if (!/^(energy_consumption|solar_pv_energy)$/.test(element.series)) {
             return true;
           }
-          if (typeof cache[element.device_id] === 'undefined') {
+          if (
+            typeof cache[element.device_id] === 'undefined' ||
+            element.value < cache[element.device_id]
+          ) {
             cache[element.device_id] = element.value;
             return false;
           }
