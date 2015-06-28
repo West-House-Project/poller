@@ -4,6 +4,12 @@ var influx = require('influx');
 var async = require('async');
 var _ = require('lodash');
 var util = require('util');
+var path = require('path');
+var fs = require('fs');
+
+var cert = fs.readFileSync(path.join(__dirname, 'settings', 'keys.cert'));
+var key = fs.readFileSync(path.join(__dirname, 'settings', 'keys.key'));
+var ca = fs.readFileSync(path.join(__dirname, 'settings', 'ca.cert'));
 
 // Unlike the name implies, this isn't used to store the data temporarily in
 // order for faster retrieval the next time. Instead, this is for holding the
@@ -14,30 +20,30 @@ const looptimeout = settings.get('looptimeout') || 1000;
 
 var session = null;
 
-function getSession() {
-  request({
-    url: settings.get('dbms:url_prefix') + '/login',
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(_.pick(settings.get('dbms'), 'username', 'password'))
-  }, function (err, res, body) {
-    if (err) {
-      return console.error(err);
-    }
-    if (res && res.statusCode >= 400) {
-      return console.error(
-        '%s: %s: Got POST response with status code %s:\n%s',
-        new Date(),
-        settings.get('dbms:url_prefix'),
-        res.statusCode,
-        body
-      );
-    }
-    session = JSON.parse(body).token;
-  });
-}
+// function getSession() {
+//   request({
+//     url: settings.get('dbms:url_prefix') + '/login',
+//     method: 'POST',
+//     headers: {
+//       'Content-Type': 'application/json'
+//     },
+//     body: JSON.stringify(_.pick(settings.get('dbms'), 'username', 'password'))
+//   }, function (err, res, body) {
+//     if (err) {
+//       return console.error(err);
+//     }
+//     if (res && res.statusCode >= 400) {
+//       return console.error(
+//         '%s: %s: Got POST response with status code %s:\n%s',
+//         new Date(),
+//         settings.get('dbms:url_prefix'),
+//         res.statusCode,
+//         body
+//       );
+//     }
+//     session = JSON.parse(body).token;
+//   });
+// }
 
 // This will infinite loop.
 (function loop() {
@@ -121,24 +127,28 @@ function getSession() {
         headers: {
           'Content-Type': 'application/json'
         },
+        cert: cert,
+        key: key,
+        ca: ca,
+        rejectUnauthorized: false,
         body: JSON.stringify({
           data: json,
           session: session
         })
       }, function (err, res, body) {
         if (err) { return callback(err); }
-        if (res && res.statusCode >= 400) {
-          if (res.statusCode === 403) {
-            getSession();
-          }
-          return callback(
-            util.format(
-              'Got POST response with status code %s:\n%s',
-              res.statusCode,
-              body
-            )
-          );
-        }
+        // if (res && res.statusCode >= 400) {
+        //   if (res.statusCode === 403) {
+        //     getSession();
+        //   }
+        //   return callback(
+        //     util.format(
+        //       'Got POST response with status code %s:\n%s',
+        //       res.statusCode,
+        //       body
+        //     )
+        //   );
+        // }
         callback(null);
       })
     },
